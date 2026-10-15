@@ -1,19 +1,3 @@
-I will now create an interactive web application designed for high school / Baccalaureate students to learn and practice limits, continuity, and discontinuities of functions.
-
-### Key Features Included:
-
-1. **Límits Laterals en un Punt**: Interactive visualization of $\lim_{x \to a^-} f(x)$ vs $\lim_{x \to a^+} f(x)$, piecewise functions, indeterminate forms $0/0$, removable and non-removable discontinuities.
-2. **Límits a l'Infinit**: Infinite limits, asymptotes (horizontal, vertical, oblique), behavior as $x \to \pm\infty$, indeterminate forms $\infty/\infty$ and $\infty - \infty$.
-3. **Tipus de Discontinuïtats**: Detailed classifier for:
-* Discontinuïtat evitable (hole / punt desplaçat)
-* Discontinuïtat de salt finit (first kind jump)
-* Discontinuïtat de salt infinit / essencial (asymptotic)
-
-
-4. **Pràctica Global i Avaluable**: Interactive self-assessment quiz with randomized / varied function exercises, step-by-step resolution guides, instant feedback, scoring, and AI-assisted hints using Gemini API.
-5. **Interactive Graphing & Formula Rendering**: Dynamic SVG/Canvas function graphing tool with movable inspect cursor, limits calculation tool, and LaTeX formatting via MathJax.
-
-```html: limits_continuitat_app.html
 <!DOCTYPE html>
 <html lang="ca">
 <head>
@@ -22,18 +6,39 @@ I will now create an interactive web application designed for high school / Bacc
     <title>Estudi i Pràctica de Límits i Continuïtat de Funcions</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- MathJax for rendering LaTeX equations -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- MathJax Configuration (Must be loaded BEFORE MathJax script) -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)'], ['$','$']],
+                displayMath: [['\\[', '\\]'], ['$$','$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('MathJax inicialitzat i a punt');
+                    });
+                }
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .tab-btn.active {
             border-bottom-width: 3px;
-            border-color: #3b82f6;
-            color: #1d4ed8;
+            border-color: #4f46e5;
+            color: #4338ca;
             font-weight: 600;
         }
         canvas { touch-action: none; }
@@ -41,7 +46,6 @@ I will now create an interactive web application designed for high school / Bacc
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- STREAMING_CHUNK: Defining header and navigation bar... -->
     <!-- Header -->
     <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -56,7 +60,7 @@ I will now create an interactive web application designed for high school / Bacc
             </div>
             <div class="flex items-center space-x-2 bg-indigo-800/80 p-1.5 rounded-xl border border-indigo-700/50">
                 <button id="ai-help-btn" onclick="openAiHelpModal()" class="px-3 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-robot text-amber-300"></i> Asistent Tutor AI
+                    <i class="fa-solid fa-robot text-amber-300"></i> Assistenta Tutor AI
                 </button>
             </div>
         </div>
@@ -83,7 +87,6 @@ I will now create an interactive web application designed for high school / Bacc
     <!-- Main Content Area -->
     <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
 
-        <!-- STREAMING_CHUNK: Building Section 1: Límits Laterals... -->
         <!-- SECCIÓ 1: LÍMITS LATERALS -->
         <section id="sec-laterals" class="space-y-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -92,7 +95,7 @@ I will now create an interactive web application designed for high school / Bacc
                     1. Límits Laterals en un Punt
                 </h2>
                 <p class="text-slate-600 leading-relaxed">
-                    Perquè existeixi el límit d'una funció $f(x)$ quan $x$ tendeix a un punt $a$, és condició necessària i suficient que existeixin els dos límits laterals i siguin iguals:
+                    Perquè existeixi el límit d'una funció \(f(x)\) quan \(x\) tendeix a un punt \(a\), és condició necessària i suficient que existeixin els dos límits laterals i siguin iguals:
                 </p>
                 <div class="my-4 p-4 bg-indigo-50 border-l-4 border-indigo-600 rounded-r-xl text-center font-medium">
                     $$\lim_{x \to a} f(x) = L \iff \lim_{x \to a^-} f(x) = \lim_{x \to a^+} f(x) = L$$
@@ -103,9 +106,9 @@ I will now create an interactive web application designed for high school / Bacc
                     <div class="lg:col-span-2 bg-slate-900 rounded-2xl p-4 shadow-inner relative flex flex-col items-center">
                         <canvas id="canvas-laterals" width="600" height="400" class="w-full h-auto bg-slate-950 rounded-xl cursor-crosshair"></canvas>
                         <div class="mt-3 text-slate-300 text-xs flex flex-wrap gap-4 justify-center">
-                            <span class="flex items-center gap-1"><span class="w-3 h-3 bg-indigo-500 rounded-full inline-block"></span> Funció $f(x)$</span>
-                            <span class="flex items-center gap-1"><span class="w-3 h-3 bg-emerald-400 rounded-full inline-block"></span> Aproximació Esquerra ($x \to a^-$)</span>
-                            <span class="flex items-center gap-1"><span class="w-3 h-3 bg-amber-400 rounded-full inline-block"></span> Aproximació Dreta ($x \to a^+$)</span>
+                            <span class="flex items-center gap-1"><span class="w-3 h-3 bg-indigo-500 rounded-full inline-block"></span> Funció \(f(x)\)</span>
+                            <span class="flex items-center gap-1"><span class="w-3 h-3 bg-emerald-400 rounded-full inline-block"></span> Aproximació Esquerra (\(x \to a^-\))</span>
+                            <span class="flex items-center gap-1"><span class="w-3 h-3 bg-amber-400 rounded-full inline-block"></span> Aproximació Dreta (\(x \to a^+\))</span>
                         </div>
                     </div>
 
@@ -121,12 +124,12 @@ I will now create an interactive web application designed for high school / Bacc
 
                             <div class="pt-2">
                                 <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">
-                                    Aproximació del valor $x$ cap a $a$:
+                                    Aproximació del valor \(x\) cap a \(a\):
                                 </label>
                                 <input type="range" id="slider-x" min="-1" max="1" step="0.01" value="0.5" oninput="drawLateralsCanvas()" class="w-full accent-indigo-600">
                                 <div class="flex justify-between text-xs text-slate-500 mt-1">
-                                    <span>$x < a$ (Esquerra)</span>
-                                    <span>$x > a$ (Dreta)</span>
+                                    <span>\(x < a\) (Esquerra)</span>
+                                    <span>\(x > a\) (Dreta)</span>
                                 </div>
                             </div>
                         </div>
@@ -140,7 +143,6 @@ I will now create an interactive web application designed for high school / Bacc
             </div>
         </section>
 
-        <!-- STREAMING_CHUNK: Building Section 2: Límits a l'Infinit... -->
         <!-- SECCIÓ 2: LÍMITS A L'INFINIT -->
         <section id="sec-infinit" class="space-y-6 hidden">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -149,21 +151,21 @@ I will now create an interactive web application designed for high school / Bacc
                     2. Límits a l'Infinit i Asímptotes
                 </h2>
                 <p class="text-slate-600 leading-relaxed mb-4">
-                    Quan estudiem el comportament d'una funció quan la variable independent creix indefinidament ($x \to +\infty$) o decreix indefinidament ($x \to -\infty$), podem trobar:
+                    Quan estudiem el comportament d'una funció quan la variable independent creix indefinidament (\(x \to +\infty\)) o decreix indefinidament (\(x \to -\infty\)), podem trobar:
                 </p>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div class="p-4 bg-indigo-50/60 rounded-xl border border-indigo-100">
                         <h3 class="font-bold text-indigo-900 text-sm mb-1"><i class="fa-solid fa-ruler-horizontal text-indigo-600 mr-1"></i> Asímptota Horitzontal</h3>
-                        <p class="text-xs text-indigo-800">Si $\lim_{x \to \pm\infty} f(x) = b$, la recta $y = b$ és una asímptota horitzontal.</p>
+                        <p class="text-xs text-indigo-800">Si \(\lim_{x \to \pm\infty} f(x) = b\), la recta \(y = b\) és una asímptota horitzontal.</p>
                     </div>
                     <div class="p-4 bg-emerald-50/60 rounded-xl border border-emerald-100">
                         <h3 class="font-bold text-emerald-900 text-sm mb-1"><i class="fa-solid fa-ruler-vertical text-emerald-600 mr-1"></i> Asímptota Vertical</h3>
-                        <p class="text-xs text-emerald-800">Si $\lim_{x \to a} f(x) = \pm\infty$, la recta $x = a$ és una asímptota vertical.</p>
+                        <p class="text-xs text-emerald-800">Si \(\lim_{x \to a} f(x) = \pm\infty\), la recta \(x = a\) és una asímptota vertical.</p>
                     </div>
                     <div class="p-4 bg-amber-50/60 rounded-xl border border-amber-100">
                         <h3 class="font-bold text-amber-900 text-sm mb-1"><i class="fa-solid fa-slash text-amber-600 mr-1"></i> Asímptota Obliqua</h3>
-                        <p class="text-xs text-amber-800">Si $\lim_{x \to \pm\infty} \frac{f(x)}{x} = m \neq 0$ i $\lim_{x \to \pm\infty} (f(x)-mx) = n$, la recta $y = mx+n$ és una asímptota obliqua.</p>
+                        <p class="text-xs text-amber-800">Si \(\lim_{x \to \pm\infty} \frac{f(x)}{x} = m \neq 0\) i \(\lim_{x \to \pm\infty} (f(x)-mx) = n\), la recta \(y = mx+n\) és una asímptota obliqua.</p>
                     </div>
                 </div>
 
@@ -175,7 +177,7 @@ I will now create an interactive web application designed for high school / Bacc
 
                     <div class="space-y-4 flex flex-col justify-between">
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                            <h3 class="font-semibold text-slate-700">Explora Funcions Racinals i Exponencials:</h3>
+                            <h3 class="font-semibold text-slate-700">Explora Funcions Racionals i Exponencials:</h3>
                             <select id="select-func-infinit" onchange="updateInfinitExplorer()" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-800 text-sm">
                                 <option value="1">AH: f(x) = (2x² + 1) / (x² - 4)</option>
                                 <option value="2">AV + AO: f(x) = (x² - 1) / (x - 2)</option>
@@ -185,7 +187,7 @@ I will now create an interactive web application designed for high school / Bacc
 
                             <div>
                                 <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">
-                                    Escala d'Zoom ($x$):
+                                    Escala de Zoom (\(x\)):
                                 </label>
                                 <input type="range" id="slider-zoom" min="5" max="50" step="1" value="15" oninput="drawInfinitCanvas()" class="w-full accent-indigo-600">
                             </div>
@@ -199,7 +201,6 @@ I will now create an interactive web application designed for high school / Bacc
             </div>
         </section>
 
-        <!-- STREAMING_CHUNK: Building Section 3: Classificació de Discontinuïtats... -->
         <!-- SECCIÓ 3: TIPUS DE DISCONTINUÏTATS -->
         <section id="sec-discontinuitats" class="space-y-6 hidden">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -208,10 +209,10 @@ I will now create an interactive web application designed for high school / Bacc
                     3. Classificació de les Discontinuïtats
                 </h2>
                 <p class="text-slate-600 leading-relaxed mb-6">
-                    Una funció $f(x)$ és **contínua** en $x = a$ si es compleixen tres condicions:
-                    <span class="inline-block bg-slate-100 px-2 py-0.5 rounded font-mono text-xs text-indigo-700 ml-1">1) Existeix $f(a)$</span>, 
-                    <span class="inline-block bg-slate-100 px-2 py-0.5 rounded font-mono text-xs text-indigo-700">2) Existeix $\lim_{x \to a} f(x)$</span> i 
-                    <span class="inline-block bg-slate-100 px-2 py-0.5 rounded font-mono text-xs text-indigo-700">3) $\lim_{x \to a} f(x) = f(a)$</span>. Si falla qualsevol condició, tenim una discontinuïtat.
+                    Una funció \(f(x)\) és **contínua** en \(x = a\) si es compleixen tres condicions:
+                    <span class="inline-block bg-slate-100 px-2 py-0.5 rounded font-mono text-xs text-indigo-700 ml-1">1) Existeix \(f(a)\)</span>, 
+                    <span class="inline-block bg-slate-100 px-2 py-0.5 rounded font-mono text-xs text-indigo-700">2) Existeix \(\lim_{x \to a} f(x)\)</span> i 
+                    <span class="inline-block bg-slate-100 px-2 py-0.5 rounded font-mono text-xs text-indigo-700">3) \(\lim_{x \to a} f(x) = f(a)\)</span>. Si falla qualsevol condició, tenim una discontinuïtat.
                 </p>
 
                 <!-- Interactive Cards Grid for Discontinuity Types -->
@@ -224,7 +225,7 @@ I will now create an interactive web application designed for high school / Bacc
                         </div>
                         <h3 class="text-lg font-bold text-slate-800 mb-2">1. Evitable</h3>
                         <p class="text-xs text-slate-600 leading-relaxed mb-3">
-                            Existeix el límit $\lim_{x \to a} f(x) = L$ (finit), però o bé no existeix $f(a)$, o bé $f(a) \neq L$.
+                            Existeix el límit \(\lim_{x \to a} f(x) = L\) (finit), però o bé no existeix \(f(a)\), o bé \(f(a) \neq L\).
                         </p>
                         <div class="bg-white p-2.5 rounded-lg border border-indigo-100 text-xs font-mono text-slate-700">
                             $$\lim_{x \to a^-} f(x) = \lim_{x \to a^+} f(x) \neq f(a)$$
@@ -239,7 +240,7 @@ I will now create an interactive web application designed for high school / Bacc
                         </div>
                         <h3 class="text-lg font-bold text-slate-800 mb-2">2. Salt Finit</h3>
                         <p class="text-xs text-slate-600 leading-relaxed mb-3">
-                            Existeixen els dos límits laterals i són finits, però diferents. El salt és el valor $|L_1 - L_2|$.
+                            Existeixen els dos límits laterals i són finits, però diferents. El salt és el valor \(|L_1 - L_2|\).
                         </p>
                         <div class="bg-white p-2.5 rounded-lg border border-slate-200 text-xs font-mono text-slate-700">
                             $$\lim_{x \to a^-} f(x) = L_1 \neq L_2 = \lim_{x \to a^+} f(x)$$
@@ -254,7 +255,7 @@ I will now create an interactive web application designed for high school / Bacc
                         </div>
                         <h3 class="text-lg font-bold text-slate-800 mb-2">3. Salt Infinit</h3>
                         <p class="text-xs text-slate-600 leading-relaxed mb-3">
-                            Almenys un dels dos límits laterals és $+\infty$ o $-\infty$. La recta $x = a$ és una asímptota vertical.
+                            Almenys un dels dos límits laterals és \(+\infty\) o \(-\infty\). La recta \(x = a\) és una asímptota vertical.
                         </p>
                         <div class="bg-white p-2.5 rounded-lg border border-slate-200 text-xs font-mono text-slate-700">
                             $$\lim_{x \to a^\pm} f(x) = \pm\infty$$
@@ -274,7 +275,6 @@ I will now create an interactive web application designed for high school / Bacc
             </div>
         </section>
 
-        <!-- STREAMING_CHUNK: Building Section 4: Pràctica Global i Avaluable... -->
         <!-- SECCIÓ 4: PRÀCTICA GLOBAL I AVALUABLE -->
         <section id="sec-practica" class="space-y-6 hidden">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -306,7 +306,6 @@ I will now create an interactive web application designed for high school / Bacc
 
     </main>
 
-    <!-- STREAMING_CHUNK: Adding Modal for Gemini Tutor Assistant... -->
     <!-- AI Help Modal -->
     <div id="ai-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-6 space-y-4 border border-slate-200">
@@ -327,7 +326,7 @@ I will now create an interactive web application designed for high school / Bacc
 
             <div class="space-y-3">
                 <label class="block text-xs font-semibold text-slate-600">Pregunta o Exercici per Resoldre:</label>
-                <textarea id="ai-prompt-input" rows="3" class="w-full p-3 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Ex: Com puc resoldre la indeterminació 0/0 en el límit lim_{x->2} (x^2 - 4)/(x - 2)?"></textarea>
+                <textarea id="ai-prompt-input" rows="3" class="w-full p-3 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Ex: Com puc resoldre la indeterminació 0/0 en el límit \lim_{x\to 2} \frac{x^2 - 4}{x - 2}?"></textarea>
                 
                 <div class="flex flex-wrap gap-2 text-xs">
                     <button onclick="setAiPrompt('Explica\'m pas a pas com trobar les asímptotes verticals i horitzontals d\'una funció racional.')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition">🔍 Com trobar asímptotes</button>
@@ -336,7 +335,7 @@ I will now create an interactive web application designed for high school / Bacc
             </div>
 
             <button onclick="askGeminiTutor()" id="ai-submit-btn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition flex justify-center items-center gap-2 shadow-sm">
-                <i class="fa-solid fa-paper-plane"></i> demanar explicació
+                <i class="fa-solid fa-paper-plane"></i> Demanar explicació
             </button>
 
             <!-- AI Response Display Area -->
@@ -345,14 +344,52 @@ I will now create an interactive web application designed for high school / Bacc
         </div>
     </div>
 
-    <!-- STREAMING_CHUNK: Main Application JavaScript Code... -->
     <script>
-        /* STREAMING_CHUNK: State management and initialization... */
         let currentTab = 'laterals';
+        let currentDiscType = 'evitable';
+
+        const quizQuestions = [
+            {
+                id: 1,
+                question: "Calcula el següent límit racional: $$\\lim_{x \\to 3} \\frac{x^2 - 9}{x - 3}$$",
+                options: ["0", "3", "6", "No existeix / Indeterminat"],
+                correct: 2,
+                explanation: "Substituint directament obtenim la indeterminació \\(0/0\\). Factoritzant el numerador: \\(x^2 - 9 = (x-3)(x+3)\\). Simplificant la fracció per \\((x-3)\\), queda \\(\\lim_{x \\to 3} (x+3) = 6\\)."
+            },
+            {
+                id: 2,
+                question: "Troba l'asímptota horitzontal quan \\(x \\to +\\infty\\) de la funció $$f(x) = \\frac{4x^2 + 1}{2x^2 - 5}$$",
+                options: ["y = 0", "y = 2", "y = 4", "No té asímptota horitzontal"],
+                correct: 1,
+                explanation: "El grau del numerador i del denominador és el mateix (2). El límit a l'infinit és el quocient dels coeficients principals: \\(\\frac{4}{2} = 2\\). Per tant, l'asímptota és \\(y = 2\\)."
+            },
+            {
+                id: 3,
+                question: "Classifica el tipus de discontinuïtat de la funció en \\(x = 1\\): $$f(x) = \\begin{cases} x + 2 & \\text{si } x < 1 \\\\ x^2 & \\text{si } x \\ge 1 \\end{cases}$$",
+                options: ["Contínua", "Discontinuïtat Evitable", "Discontinuïtat de Salt Finit", "Discontinuïtat de Salt Infinit"],
+                correct: 2,
+                explanation: "Límit esquerra: \\(\\lim_{x \\to 1^-} (x+2) = 3\\). Límit dreta: \\(\\lim_{x \\to 1^+} (x^2) = 1\\). Ambdós límits laterals existeixen i són finits però diferents (\\(3 \\neq 1\\)). És un salt finit de grandària \\(|3-1|=2\\)."
+            },
+            {
+                id: 4,
+                question: "Quines són les asímptotes verticals de la funció $$f(x) = \\frac{x + 1}{x^2 - 4}$$?",
+                options: ["x = -1", "x = 2 i x = -2", "y = 0", "x = 4"],
+                correct: 1,
+                explanation: "Els punts on el denominador s'anul·la són \\(x^2 - 4 = 0 \\implies x = 2\\) i \\(x = -2\\). En cap d'aquests punts el numerador s'anul·la, així que \\(\\lim_{x \\to 2} f(x) = \\pm\\infty\\) i \\(\\lim_{x \\to -2} f(x) = \\pm\\infty\\)."
+            }
+        ];
+
         let quizState = {
             score: 0,
             answers: {}
         };
+
+        // Helper function to trigger MathJax safely
+        function renderMath() {
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetPromise().catch((err) => console.error("Error renderitzant MathJax:", err));
+            }
+        }
 
         // Window onload initialization
         window.onload = function() {
@@ -360,14 +397,9 @@ I will now create an interactive web application designed for high school / Bacc
             updateInfinitExplorer();
             selectDiscType('evitable');
             renderGlobalQuiz();
-            
-            // Re-render LaTeX math formulas
-            if (window.MathJax) {
-                MathJax.typesetPromise();
-            }
+            renderMath();
         };
 
-        /* STREAMING_CHUNK: Tab switching logic... */
         function switchTab(tabId) {
             currentTab = tabId;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -385,11 +417,10 @@ I will now create an interactive web application designed for high school / Bacc
                 if(tabId === 'laterals') drawLateralsCanvas();
                 if(tabId === 'infinit') drawInfinitCanvas();
                 if(tabId === 'discontinuitats') drawDiscCanvas();
-                if (window.MathJax) MathJax.typesetPromise();
+                renderMath();
             }, 50);
         }
 
-        /* STREAMING_CHUNK: Section 1 - Laterals Limits Explorer Code... */
         let currentLateralsFuncId = 1;
 
         function updateLateralsExplorer() {
@@ -404,32 +435,32 @@ I will now create an interactive web application designed for high school / Bacc
             let statusBadge = "";
 
             if (currentLateralsFuncId === 1) {
-                title = "Funció Contínua en $x = 2$";
-                expr = "$f(x) = x^2 - 1$";
+                title = "Funció Contínua en \\(x = 2\\)";
+                expr = "\\(f(x) = x^2 - 1\\)";
                 aVal = "2";
-                limLeft = "$3$";
-                limRight = "$3$";
+                limLeft = "\\(3\\)";
+                limRight = "\\(3\\)";
                 statusBadge = "<span class='px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold text-xs'>Límit Existeix = 3</span>";
             } else if (currentLateralsFuncId === 2) {
                 title = "Funció a Troços amb Salt Finit";
-                expr = "$f(x) = \\begin{cases} x + 1 & \\text{si } x < 1 \\\\ 4 - x & \\text{si } x \\ge 1 \\end{cases}$";
+                expr = "\\(f(x) = \\begin{cases} x + 1 & \\text{si } x < 1 \\\\ 4 - x & \\text{si } x \\ge 1 \\end{cases}\\)";
                 aVal = "1";
-                limLeft = "$2$";
-                limRight = "$3$";
+                limLeft = "\\(2\\)";
+                limRight = "\\(3\\)";
                 statusBadge = "<span class='px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-semibold text-xs'>No Existeix Límit (Salt 1)</span>";
             } else if (currentLateralsFuncId === 3) {
-                title = "Discontinuïtat Evitable en $x = 2$";
-                expr = "$f(x) = \\frac{x^2 - 4}{x - 2}$";
+                title = "Discontinuïtat Evitable en \\(x = 2\\)";
+                expr = "\\(f(x) = \\frac{x^2 - 4}{x - 2}\\)";
                 aVal = "2";
-                limLeft = "$4$";
-                limRight = "$4$";
+                limLeft = "\\(4\\)";
+                limRight = "\\(4\\)";
                 statusBadge = "<span class='px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-semibold text-xs'>Límit Existeix = 4, f(2) No Existeix</span>";
             } else if (currentLateralsFuncId === 4) {
-                title = "Asímptota Vertical en $x = 3$";
-                expr = "$f(x) = \\frac{1}{x - 3}$";
+                title = "Asímptota Vertical en \\(x = 3\\)";
+                expr = "\\(f(x) = \\frac{1}{x - 3}\\)";
                 aVal = "3";
-                limLeft = "$-\\infty$";
-                limRight = "$+\\infty$";
+                limLeft = "\\(-\\infty\\)";
+                limRight = "\\(+\\infty\\)";
                 statusBadge = "<span class='px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-semibold text-xs'>Límits Infinits Divergents</span>";
             }
 
@@ -441,18 +472,18 @@ I will now create an interactive web application designed for high school / Bacc
                 <p class="text-xs text-slate-600">Expressió: ${expr}</p>
                 <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-100 text-xs">
                     <div class="p-2 bg-emerald-50 rounded-lg text-emerald-900">
-                        <div class="font-semibold text-emerald-700">Límit Esquerra ($x \\to ${aVal}^-$)</div>
+                        <div class="font-semibold text-emerald-700">Límit Esquerra (\\(x \\to ${aVal}^-\\))</div>
                         <div class="text-base font-bold">${limLeft}</div>
                     </div>
                     <div class="p-2 bg-amber-50 rounded-lg text-amber-900">
-                        <div class="font-semibold text-amber-700">Límit Dreta ($x \\to ${aVal}^+$)</div>
+                        <div class="font-semibold text-amber-700">Límit Dreta (\\(x \\to ${aVal}^+\\))</div>
                         <div class="text-base font-bold">${limRight}</div>
                     </div>
                 </div>
             `;
 
             drawLateralsCanvas();
-            if (window.MathJax) MathJax.typesetPromise();
+            renderMath();
         }
 
         function drawLateralsCanvas() {
@@ -541,7 +572,7 @@ I will now create an interactive web application designed for high school / Bacc
             let currentX = targetA + sliderVal * 1.5;
             let currentY = evalF(currentX);
 
-            if (currentY !== null && !isNaN(currentY) && Math.abs(currentY) < 12) {
+            if (currentY !== null && !isNaN(currentY)) {
                 let pxCurr = cx + currentX * scale;
                 let pyCurr = cy - currentY * scale;
 
@@ -552,24 +583,19 @@ I will now create an interactive web application designed for high school / Bacc
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2;
                 ctx.stroke();
-
-                // Coordinates label
-                ctx.fillStyle = '#f8fafc';
-                ctx.font = '12px Inter, sans-serif';
-                ctx.fillText(`x=${currentX.toFixed(2)}, y=${currentY.toFixed(2)}`, pxCurr + 10, pyCurr - 10);
             }
 
-            // Hole marker for removable discontinuity
+            // Hole decoration for removable discontinuity
             if (currentLateralsFuncId === 3) {
                 let pyHole = cy - 4 * scale;
                 ctx.fillStyle = '#0f172a';
-                ctx.beginPath(); ctx.arc(pxa, pyHole, 6, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = '#6366f1'; ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.arc(pxa, pyHole, 6, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(pxa, pyHole, 5, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#6366f1';
+                ctx.lineWidth = 2;
+                ctx.stroke();
             }
         }
 
-        /* STREAMING_CHUNK: Section 2 - Limits at Infinity Explorer Code... */
         let currentInfinitFuncId = 1;
 
         function updateInfinitExplorer() {
@@ -577,49 +603,49 @@ I will now create an interactive web application designed for high school / Bacc
             const infoCard = document.getElementById('infinit-info-card');
 
             let title = "";
-            let asym = "";
-            let limPlus = "";
-            let limMinus = "";
+            let asympInfo = "";
 
             if (currentInfinitFuncId === 1) {
-                title = "$f(x) = \\frac{2x^2 + 1}{x^2 - 4}$";
-                asym = "Asímptota Horitzontal: $y = 2$, Asímptotes Verticals: $x = -2, x = 2$";
-                limPlus = "2";
-                limMinus = "2";
+                title = "Asímptotes Horitzontal i Vertical";
+                asympInfo = `
+                    <div class="text-xs space-y-1 text-slate-600">
+                        <p>• <b>A. Horitzontal:</b> \\(y = 2\\) (quan \\(x \\to \\pm\\infty\\))</p>
+                        <p>• <b>A. Verticals:</b> \\(x = -2\\) i \\(x = 2\\)</p>
+                    </div>
+                `;
             } else if (currentInfinitFuncId === 2) {
-                title = "$f(x) = \\frac{x^2 - 1}{x - 2}$";
-                asym = "Asímptota Obliqua: $y = x + 2$, Asímptota Vertical: $x = 2$";
-                limPlus = "$+\\infty$";
-                limMinus = "$-\\infty$";
+                title = "Asímptota Obliqua i Vertical";
+                asympInfo = `
+                    <div class="text-xs space-y-1 text-slate-600">
+                        <p>• <b>A. Obliqua:</b> \\(y = x + 2\\) (quan \\(x \\to \\pm\\infty\\))</p>
+                        <p>• <b>A. Vertical:</b> \\(x = 2\\)</p>
+                    </div>
+                `;
             } else if (currentInfinitFuncId === 3) {
-                title = "$f(x) = \\frac{e^x}{x + 1}$";
-                asym = "Asímptota Horitzontal ($x \\to -\\infty$): $y = 0$, Vertical: $x = -1$";
-                limPlus = "$+\\infty$";
-                limMinus = "0";
+                title = "Creixement Exponencial";
+                asympInfo = `
+                    <div class="text-xs space-y-1 text-slate-600">
+                        <p>• <b>A. Horitzontal:</b> \\(y = 0\\) quan \\(x \\to -\\infty\\)</p>
+                        <p>• <b>A. Vertical:</b> \\(x = -1\\)</p>
+                    </div>
+                `;
             } else if (currentInfinitFuncId === 4) {
-                title = "$f(x) = \\sqrt{x^2 + 2x} - x$";
-                asym = "Asímptota Horitzontal ($x \\to +\\infty$): $y = 1$";
-                limPlus = "1";
-                limMinus = "No definida per $x \\in (-2,0)$";
+                title = "Indeterminació \\(\\infty - \\infty\\)";
+                asympInfo = `
+                    <div class="text-xs space-y-1 text-slate-600">
+                        <p>• <b>Límit a \\(+\\infty\\):</b> \\(\\lim_{x \\to +\\infty} (\\sqrt{x^2+2x} - x) = 1\\)</p>
+                        <p>• <b>A. Horitzontal:</b> \\(y = 1\\) quan \\(x \\to +\\infty\\)</p>
+                    </div>
+                `;
             }
 
             infoCard.innerHTML = `
                 <h4 class="font-bold text-slate-800 text-sm mb-1">${title}</h4>
-                <p class="text-xs text-indigo-700 font-medium">${asym}</p>
-                <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-100 text-xs">
-                    <div class="p-2 bg-slate-100 rounded-lg">
-                        <div class="text-slate-500">$\lim_{x \\to +\\infty} f(x)$</div>
-                        <div class="font-bold text-slate-800">${limPlus}</div>
-                    </div>
-                    <div class="p-2 bg-slate-100 rounded-lg">
-                        <div class="text-slate-500">$\lim_{x \\to -\\infty} f(x)$</div>
-                        <div class="font-bold text-slate-800">${limMinus}</div>
-                    </div>
-                </div>
+                ${asympInfo}
             `;
 
             drawInfinitCanvas();
-            if (window.MathJax) MathJax.typesetPromise();
+            renderMath();
         }
 
         function drawInfinitCanvas() {
@@ -631,17 +657,18 @@ I will now create an interactive web application designed for high school / Bacc
 
             ctx.clearRect(0, 0, w, h);
 
+            const zoom = parseFloat(document.getElementById('slider-zoom').value);
             const cx = w / 2;
             const cy = h / 2;
-            const zoomScale = parseFloat(document.getElementById('slider-zoom').value);
+            const scale = w / (zoom * 2);
 
             // Grid
             ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 1;
-            for (let x = 0; x < w; x += 30) {
+            for (let x = 0; x < w; x += scale * 2) {
                 ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
             }
-            for (let y = 0; y < h; y += 30) {
+            for (let y = 0; y < h; y += scale * 2) {
                 ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
             }
 
@@ -651,62 +678,75 @@ I will now create an interactive web application designed for high school / Bacc
             ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
 
+            // Function Evaluator
             function evalInf(x) {
                 if (currentInfinitFuncId === 1) { // (2x^2 + 1)/(x^2 - 4)
-                    if (Math.abs(x*x - 4) < 0.1) return null;
-                    return (2 * x * x + 1) / (x * x - 4);
+                    if (Math.abs(x*x - 4) < 0.01) return null;
+                    return (2*x*x + 1) / (x*x - 4);
                 } else if (currentInfinitFuncId === 2) { // (x^2 - 1)/(x - 2)
-                    if (Math.abs(x - 2) < 0.1) return null;
-                    return (x * x - 1) / (x - 2);
-                } else if (currentInfinitFuncId === 3) { // e^x / (x+1)
-                    if (Math.abs(x + 1) < 0.1) return null;
+                    if (Math.abs(x - 2) < 0.01) return null;
+                    return (x*x - 1) / (x - 2);
+                } else if (currentInfinitFuncId === 3) { // e^x / (x + 1)
+                    if (Math.abs(x + 1) < 0.01) return null;
                     return Math.exp(x) / (x + 1);
                 } else if (currentInfinitFuncId === 4) { // sqrt(x^2 + 2x) - x
-                    if (x > -2 && x < 0) return null;
-                    return Math.sqrt(x * x + 2 * x) - x;
+                    if (x < -2 && x > 0) return null;
+                    let val = x*x + 2*x;
+                    if (val < 0) return null;
+                    return Math.sqrt(val) - x;
                 }
                 return 0;
             }
 
-            // Draw horizontal / oblique asymptotes
-            ctx.setLineDash([6, 6]);
+            // Draw Asymptotes
+            ctx.setLineDash([5, 5]);
             ctx.lineWidth = 1.5;
+
             if (currentInfinitFuncId === 1) {
-                // y = 2
-                let py2 = cy - 2 * zoomScale;
-                ctx.strokeStyle = '#f59e0b';
-                ctx.beginPath(); ctx.moveTo(0, py2); ctx.lineTo(w, py2); ctx.stroke();
+                // AH y = 2
+                let pyAH = cy - 2 * scale;
+                ctx.strokeStyle = '#38bdf8';
+                ctx.beginPath(); ctx.moveTo(0, pyAH); ctx.lineTo(w, pyAH); ctx.stroke();
+
+                // AV x = -2, x = 2
+                ctx.strokeStyle = '#f43f5e';
+                ctx.beginPath(); ctx.moveTo(cx - 2*scale, 0); ctx.lineTo(cx - 2*scale, h); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx + 2*scale, 0); ctx.lineTo(cx + 2*scale, h); ctx.stroke();
             } else if (currentInfinitFuncId === 2) {
-                // y = x + 2
-                ctx.strokeStyle = '#f59e0b';
+                // AO y = x + 2
+                ctx.strokeStyle = '#fbbf24';
                 ctx.beginPath();
-                ctx.moveTo(0, cy - (-cx/zoomScale + 2) * zoomScale);
-                ctx.lineTo(w, cy - ((w-cx)/zoomScale + 2) * zoomScale);
+                ctx.moveTo(0, cy - (-zoom + 2)*scale);
+                ctx.lineTo(w, cy - (zoom + 2)*scale);
                 ctx.stroke();
+
+                // AV x = 2
+                ctx.strokeStyle = '#f43f5e';
+                ctx.beginPath(); ctx.moveTo(cx + 2*scale, 0); ctx.lineTo(cx + 2*scale, h); ctx.stroke();
             } else if (currentInfinitFuncId === 4) {
-                // y = 1 for positive x
-                let py1 = cy - 1 * zoomScale;
-                ctx.strokeStyle = '#f59e0b';
-                ctx.beginPath(); ctx.moveTo(cx, py1); ctx.lineTo(w, py1); ctx.stroke();
+                // AH y = 1 for x > 0
+                let pyAH = cy - 1 * scale;
+                ctx.strokeStyle = '#38bdf8';
+                ctx.beginPath(); ctx.moveTo(cx, pyAH); ctx.lineTo(w, pyAH); ctx.stroke();
             }
             ctx.setLineDash([]);
 
-            // Draw Function
-            ctx.strokeStyle = '#38bdf8';
+            // Plot curve
+            ctx.strokeStyle = '#818cf8';
             ctx.lineWidth = 2.5;
             ctx.beginPath();
-            let first = true;
 
+            let first = true;
             for (let px = 0; px < w; px += 2) {
-                let x = (px - cx) / zoomScale;
+                let x = (px - cx) / scale;
                 let y = evalInf(x);
 
-                if (y === null || isNaN(y) || Math.abs(y) > 25) {
+                if (y === null || isNaN(y) || Math.abs(y) > zoom * 2) {
                     first = true;
                     continue;
                 }
 
-                let py = cy - y * zoomScale;
+                let py = cy - y * scale;
                 if (first) {
                     ctx.moveTo(px, py);
                     first = false;
@@ -717,61 +757,43 @@ I will now create an interactive web application designed for high school / Bacc
             ctx.stroke();
         }
 
-        /* STREAMING_CHUNK: Section 3 - Discontinuities Classifier Code... */
-        let selectedDiscType = 'evitable';
-
         function selectDiscType(type) {
-            selectedDiscType = type;
-            document.querySelectorAll('#sec-discontinuitats [id^="card-disc-"]').forEach(card => {
-                card.classList.remove('border-indigo-500', 'bg-indigo-50/30');
-                card.classList.add('border-slate-200', 'bg-white');
-            });
-
-            const activeCard = document.getElementById(`card-disc-${type}`);
-            if (activeCard) {
-                activeCard.classList.remove('border-slate-200', 'bg-white');
-                activeCard.classList.add('border-indigo-500', 'bg-indigo-50/30');
-            }
+            currentDiscType = type;
+            document.getElementById('card-disc-evitable').className = "cursor-pointer border-2 " + (type==='evitable' ? "border-indigo-500 bg-indigo-50/30" : "border-slate-200 bg-white") + " rounded-2xl p-5 hover:shadow-md transition";
+            document.getElementById('card-disc-salt-finit').className = "cursor-pointer border-2 " + (type==='salt-finit' ? "border-amber-500 bg-amber-50/30" : "border-slate-200 bg-white") + " rounded-2xl p-5 hover:shadow-md transition";
+            document.getElementById('card-disc-salt-infinit').className = "cursor-pointer border-2 " + (type==='salt-infinit' ? "border-rose-500 bg-rose-50/30" : "border-slate-200 bg-white") + " rounded-2xl p-5 hover:shadow-md transition";
 
             const panel = document.getElementById('disc-detail-panel');
 
             if (type === 'evitable') {
                 panel.innerHTML = `
-                    <h4 class="text-base font-bold text-amber-300 mb-1">Discontinuïtat Evitable</h4>
-                    <p class="text-xs text-slate-300">
-                        La funció té un "forat" en $x = a$. El límit existeix, però la funció o bé no està definida o té un valor diferent.
-                    </p>
-                    <div class="p-2.5 bg-slate-900/80 rounded-lg border border-slate-700 text-xs space-y-1">
-                        <div>Exemple: $f(x) = \\frac{x^2 - 1}{x - 1}$ en $a = 1$</div>
-                        <div class="text-emerald-400">Punt redefinible: assignant $f(1) = 2$, la funció esdevé contínua.</div>
+                    <h4 class="font-bold text-amber-300 text-lg">Discontinuïtat Evitable</h4>
+                    <p class="text-xs text-slate-300">Es pot "reparar" la funció redefinint el valor de \\(f(a)\\) igual al límit \\(L\\).</p>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700 text-xs font-mono space-y-1">
+                        <div>$$\\lim_{x \\to a} f(x) = L \\quad \\text{(existeix)}$$</div>
+                        <div>\\(f(a)\\) no existeix o \\(f(a) \\neq L\\)</div>
                     </div>
                 `;
             } else if (type === 'salt-finit') {
                 panel.innerHTML = `
-                    <h4 class="text-base font-bold text-amber-300 mb-1">Discontinuïtat de Salt Finit</h4>
-                    <p class="text-xs text-slate-300">
-                        Els dos límits laterals existeixen i són números reals, però no coincideixen.
-                    </p>
-                    <div class="p-2.5 bg-slate-900/80 rounded-lg border border-slate-700 text-xs space-y-1">
-                        <div>Mida del Salt: $\\text{Salt} = |\\lim_{x \\to a^+} f(x) - \\lim_{x \\to a^-} f(x)|$</div>
-                        <div class="text-amber-400">Molt comú en funcions definides a troços.</div>
+                    <h4 class="font-bold text-amber-300 text-lg">Discontinuïtat de Salt Finit</h4>
+                    <p class="text-xs text-slate-300">Els límits laterals són valors reals diferents. La distància entre les dues branques és el salt.</p>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700 text-xs font-mono space-y-1">
+                        <div>$$\\text{Salt} = |L_1 - L_2| > 0$$</div>
                     </div>
                 `;
-            } else if (type === 'salt-infinit') {
+            } else {
                 panel.innerHTML = `
-                    <h4 class="text-base font-bold text-amber-300 mb-1">Discontinuïtat Inevitable de Salt Infinit</h4>
-                    <p class="text-xs text-slate-300">
-                        Almenys un dels límits en el punt és infinit. Es produeix una asímptota vertical $x = a$.
-                    </p>
-                    <div class="p-2.5 bg-slate-900/80 rounded-lg border border-slate-700 text-xs space-y-1">
-                        <div>Exemple: $f(x) = \\frac{1}{(x - 2)^2}$ en $a = 2$</div>
-                        <div class="text-rose-400">$\lim_{x \\to 2} f(x) = +\\infty$</div>
+                    <h4 class="font-bold text-amber-300 text-lg">Discontinuïtat de Salt Infinit</h4>
+                    <p class="text-xs text-slate-300">Almenys un dels límits laterals va cap a \\(+\\infty\\) o \\(-\\infty\\). Hi ha una asímptota vertical.</p>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700 text-xs font-mono space-y-1">
+                        <div>Asímptota vertical: \\(x = a\\)</div>
                     </div>
                 `;
             }
 
             drawDiscCanvas();
-            if (window.MathJax) MathJax.typesetPromise();
+            renderMath();
         }
 
         function drawDiscCanvas() {
@@ -784,222 +806,173 @@ I will now create an interactive web application designed for high school / Bacc
             ctx.clearRect(0, 0, w, h);
 
             const cx = w / 2;
-            const cy = h / 2;
+            const cy = h / 2 + 20;
             const scale = 40;
 
+            // Grid
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < w; x += scale) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+            }
+            for (let y = 0; y < h; y += scale) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+            }
+
             // Axes
-            ctx.strokeStyle = '#475569';
-            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
 
-            ctx.strokeStyle = '#818cf8';
+            ctx.strokeStyle = '#38bdf8';
             ctx.lineWidth = 3;
 
-            if (selectedDiscType === 'evitable') {
-                // Line y = x + 1 with hole at x=1 (px = cx + 40, py = cy - 80)
+            if (currentDiscType === 'evitable') {
+                // f(x) = x + 1 but open hole at x = 1 (y = 2) and point at (1, 3)
                 ctx.beginPath();
-                ctx.moveTo(cx - 100, cy - (-2.5 + 1) * scale);
-                ctx.lineTo(cx + 100, cy - (2.5 + 1) * scale);
+                ctx.moveTo(cx - 3*scale, cy - (-2)*scale);
+                ctx.lineTo(cx + 1*scale, cy - (2)*scale);
                 ctx.stroke();
 
-                // Hole
-                let hx = cx + 1 * scale;
-                let hy = cy - 2 * scale;
-                ctx.fillStyle = '#020617';
-                ctx.beginPath(); ctx.arc(hx, hy, 6, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = '#818cf8';
-                ctx.beginPath(); ctx.arc(hx, hy, 6, 0, Math.PI * 2); ctx.stroke();
-
-                // Displaced point
-                ctx.fillStyle = '#f59e0b';
-                ctx.beginPath(); ctx.arc(hx, hy - 40, 5, 0, Math.PI * 2); ctx.fill();
-
-            } else if (selectedDiscType === 'salt-finit') {
-                // Left piece: y = x (x < 1)
                 ctx.beginPath();
-                ctx.moveTo(cx - 120, cy - (-3) * scale);
-                ctx.lineTo(cx + 1 * scale, cy - 1 * scale);
+                ctx.moveTo(cx + 1*scale, cy - (2)*scale);
+                ctx.lineTo(cx + 4*scale, cy - (5)*scale);
                 ctx.stroke();
 
-                // Right piece: y = x + 1.5 (x >= 1)
+                // Open hole at (1,2)
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath(); ctx.arc(cx + 1*scale, cy - 2*scale, 6, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = '#38bdf8'; ctx.stroke();
+
+                // Point at (1,3)
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath(); ctx.arc(cx + 1*scale, cy - 3*scale, 6, 0, Math.PI*2); ctx.fill();
+
+            } else if (currentDiscType === 'salt-finit') {
+                // Branch 1: x < 1, y = x + 1 -> reaches (1,2)
                 ctx.beginPath();
-                ctx.moveTo(cx + 1 * scale, cy - 2.5 * scale);
-                ctx.lineTo(cx + 120, cy - 4 * scale);
+                ctx.moveTo(cx - 3*scale, cy - (-2)*scale);
+                ctx.lineTo(cx + 1*scale, cy - (2)*scale);
                 ctx.stroke();
 
-                // Points
-                let px = cx + 1 * scale;
-                let pyLeft = cy - 1 * scale;
-                let pyRight = cy - 2.5 * scale;
+                // Hole at (1,2)
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath(); ctx.arc(cx + 1*scale, cy - 2*scale, 6, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = '#38bdf8'; ctx.stroke();
 
-                ctx.fillStyle = '#020617';
-                ctx.beginPath(); ctx.arc(px, pyLeft, 5, 0, Math.PI * 2); ctx.fill();
+                // Branch 2: x >= 1, y = -x + 3 -> starts at (1, -1)
+                ctx.strokeStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.moveTo(cx + 1*scale, cy - (-1)*scale);
+                ctx.lineTo(cx + 4*scale, cy - (-4)*scale);
                 ctx.stroke();
 
-                ctx.fillStyle = '#818cf8';
-                ctx.beginPath(); ctx.arc(px, pyRight, 5, 0, Math.PI * 2); ctx.fill();
-            } else if (selectedDiscType === 'salt-infinit') {
+                // Filled point at (1, -1)
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath(); ctx.arc(cx + 1*scale, cy - (-1)*scale, 6, 0, Math.PI*2); ctx.fill();
+
+            } else if (currentDiscType === 'salt-infinit') {
                 // Vertical asymptote at x = 1
-                let asymX = cx + 1 * scale;
                 ctx.setLineDash([5, 5]);
                 ctx.strokeStyle = '#f43f5e';
-                ctx.beginPath(); ctx.moveTo(asymX, 0); ctx.lineTo(asymX, h); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx + 1*scale, 0); ctx.lineTo(cx + 1*scale, h); ctx.stroke();
                 ctx.setLineDash([]);
 
-                ctx.strokeStyle = '#818cf8';
-                // Left branch: 1/(x-1) -> -inf
+                // Curve 1 / (x - 1)
+                ctx.strokeStyle = '#38bdf8';
                 ctx.beginPath();
-                for (let px = 0; px < asymX - 5; px += 2) {
+                for (let px = 0; px < w; px++) {
                     let x = (px - cx) / scale;
+                    if (Math.abs(x - 1) < 0.1) continue;
                     let y = 1 / (x - 1);
                     let py = cy - y * scale;
-                    if (px === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-                }
-                ctx.stroke();
-
-                // Right branch: 1/(x-1) -> +inf
-                ctx.beginPath();
-                for (let px = asymX + 5; px < w; px += 2) {
-                    let x = (px - cx) / scale;
-                    let y = 1 / (x - 1);
-                    let py = cy - y * scale;
-                    if (px === asymX + 5) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                    if (px === 0 || Math.abs(x - 1) < 0.12) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
                 }
                 ctx.stroke();
             }
         }
-
-        /* STREAMING_CHUNK: Section 4 - Global Quiz & Assessment Engine... */
-        const quizQuestions = [
-            {
-                id: 1,
-                title: "1. Límit Indeterminat $0/0$",
-                question: "Calcula el següent límit: $$\\lim_{x \\to 3} \\frac{x^2 - 9}{x - 3}$$",
-                options: [
-                    { id: 'a', text: "$0$" },
-                    { id: 'b', text: "$6$" },
-                    { id: 'c', text: "$\\infty$" },
-                    { id: 'd', text: "No existeix" }
-                ],
-                correct: 'b',
-                explanation: "Descomponent en factors el numerador: $x^2 - 9 = (x - 3)(x + 3)$. Simplificant amb el denominador queda $\\lim_{x \\to 3} (x + 3) = 3 + 3 = 6$."
-            },
-            {
-                id: 2,
-                title: "2. Classificació de Discontinuïtat",
-                question: "Donada la funció $f(x) = \\frac{x + 2}{x - 1}$, quin tipus de discontinuïtat presenta en $x = 1$?",
-                options: [
-                    { id: 'a', text: "Discontinuïtat Evitable" },
-                    { id: 'b', text: "Discontinuïtat de Salt Finit" },
-                    { id: 'c', text: "Discontinuïtat de Salt Infinit (Asimptòtica)" },
-                    { id: 'd', text: "És contínua en x = 1" }
-                ],
-                correct: 'c',
-                explanation: "En $x = 1$, el numerador val $3 \\neq 0$ i el denominador val $0$. Per tant, els límits laterals són $\\pm\\infty$, donant una asímptota vertical $x = 1$ i un salt infinit."
-            },
-            {
-                id: 3,
-                title: "3. Asímptota Horitzontal",
-                question: "Quin és el valor de l'asímptota horitzontal de $f(x) = \\frac{4x^2 - 5}{2x^2 + x + 1}$ quan $x \\to +\\infty$?",
-                options: [
-                    { id: 'a', text: "$y = 2$" },
-                    { id: 'b', text: "$y = 4$" },
-                    { id: 'c', text: "$y = 0$" },
-                    { id: 'd', text: "No té asímptota horitzontal" }
-                ],
-                correct: 'a',
-                explanation: "Com que els graus del numerador i denominador són iguals (grau 2), el límit a l'infinit és el quocient dels coeficients de major grau: $\\frac{4}{2} = 2$. Per tant, $y = 2$."
-            },
-            {
-                id: 4,
-                title: "4. Continuïtat d'una Funció a Troços",
-                question: "Per a quin valor de $k$ la funció $f(x) = \\begin{cases} 2x + k & \\text{si } x \\le 2 \\\\ x^2 - 1 & \\text{si } x > 2 \\end{cases}$ és contínua en tot $\\mathbb{R}$?",
-                options: [
-                    { id: 'a', text: "$k = 0$" },
-                    { id: 'b', text: "$k = -1$" },
-                    { id: 'c', text: "$k = 1$" },
-                    { id: 'd', text: "$k = 3$" }
-                ],
-                correct: 'b',
-                explanation: "Cal igualar els límits laterals en $x = 2$:\n$\\lim_{x \\to 2^-} (2x + k) = 4 + k$\n$\\lim_{x \\to 2^+} (x^2 - 1) = 3$\nIgualant: $4 + k = 3 \\implies k = -1$."
-            }
-        ];
 
         function renderGlobalQuiz() {
             const container = document.getElementById('quiz-container');
-            container.innerHTML = '';
+            container.innerHTML = "";
 
-            quizQuestions.forEach(q => {
+            quizQuestions.forEach((q, idx) => {
                 const card = document.createElement('div');
-                card.className = 'bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4';
-                card.id = `quiz-card-${q.id}`;
-
-                let optionsHTML = q.options.map(opt => `
-                    <label onclick="submitAnswer(${q.id}, '${opt.id}')" class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/30 transition text-sm text-slate-700">
-                        <input type="radio" name="question-${q.id}" value="${opt.id}" class="accent-indigo-600">
-                        <span>${opt.text}</span>
-                    </label>
-                `).join('');
-
+                card.className = "bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4";
                 card.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-slate-800 text-base">${q.title}</h3>
-                        <span id="badge-q-${q.id}" class="text-xs px-2.5 py-1 bg-slate-200 text-slate-700 rounded-lg font-medium">Pendent</span>
+                    <div class="flex items-start justify-between gap-2">
+                        <span class="px-2.5 py-1 bg-indigo-100 text-indigo-800 font-bold text-xs rounded-lg">Exercici ${idx + 1}</span>
+                        <div id="quiz-status-${q.id}" class="text-xs font-semibold"></div>
                     </div>
-                    <div class="text-sm text-slate-700">${q.question}</div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        ${optionsHTML}
+                    <div class="text-sm text-slate-800 font-medium">${q.question}</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        ${q.options.map((opt, oIdx) => `
+                            <button onclick="checkAnswer(${q.id}, ${oIdx})" id="opt-btn-${q.id}-${oIdx}" class="p-3 text-left bg-white hover:bg-indigo-50/50 border border-slate-200 rounded-xl text-xs transition text-slate-700 font-medium">
+                                ${opt}
+                            </button>
+                        `).join('')}
                     </div>
-                    <div id="explanation-q-${q.id}" class="hidden p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-xs text-indigo-900 leading-relaxed">
-                        <strong>Solució explicada:</strong> ${q.explanation}
+                    <div id="quiz-exp-${q.id}" class="hidden p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs space-y-1">
+                        <div class="font-bold"><i class="fa-solid fa-circle-check mr-1"></i> Explicació Pas a Pas:</div>
+                        <div>${q.explanation}</div>
                     </div>
                 `;
-
                 container.appendChild(card);
             });
 
-            updateScoreDisplay();
+            renderMath();
         }
 
-        function submitAnswer(questionId, selectedOpt) {
-            const q = quizQuestions.find(item => item.id === questionId);
+        function checkAnswer(qId, selectedIdx) {
+            const q = quizQuestions.find(item => item.id === qId);
             if (!q) return;
 
-            quizState.answers[questionId] = selectedOpt;
-
-            const badge = document.getElementById(`badge-q-${questionId}`);
-            const explanation = document.getElementById(`explanation-q-${questionId}`);
-
-            if (selectedOpt === q.correct) {
-                badge.className = "text-xs px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-lg font-bold";
-                badge.innerText = "¡Correcte!";
-            } else {
-                badge.className = "text-xs px-2.5 py-1 bg-rose-100 text-rose-800 rounded-lg font-bold";
-                badge.innerText = "Incorrecte";
-            }
-
-            explanation.classList.remove('hidden');
-            updateScoreDisplay();
-            if (window.MathJax) MathJax.typesetPromise();
-        }
-
-        function updateScoreDisplay() {
-            let correctCount = 0;
-            quizQuestions.forEach(q => {
-                if (quizState.answers[q.id] === q.correct) correctCount++;
+            // Disable all options for this question
+            q.options.forEach((_, oIdx) => {
+                const btn = document.getElementById(`opt-btn-${qId}-${oIdx}`);
+                btn.disabled = true;
+                btn.classList.add('opacity-60', 'cursor-not-allowed');
             });
 
-            document.getElementById('quiz-score').innerText = `${correctCount} / ${quizQuestions.length}`;
+            const selectedBtn = document.getElementById(`opt-btn-${qId}-${selectedIdx}`);
+            const statusDiv = document.getElementById(`quiz-status-${qId}`);
+            const expDiv = document.getElementById(`quiz-exp-${qId}`);
+
+            if (selectedIdx === q.correct) {
+                selectedBtn.classList.remove('bg-white', 'border-slate-200', 'opacity-60');
+                selectedBtn.classList.add('bg-emerald-600', 'text-white', 'border-emerald-600');
+                statusDiv.innerHTML = "<span class='text-emerald-600'><i class='fa-solid fa-check'></i> Correcte!</span>";
+                if (!quizState.answers[qId]) {
+                    quizState.score += 1;
+                }
+            } else {
+                selectedBtn.classList.remove('bg-white', 'border-slate-200', 'opacity-60');
+                selectedBtn.classList.add('bg-rose-600', 'text-white', 'border-rose-600');
+                
+                // Highlight correct one
+                const correctBtn = document.getElementById(`opt-btn-${qId}-${q.correct}`);
+                correctBtn.classList.remove('opacity-60');
+                correctBtn.classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-900');
+                
+                statusDiv.innerHTML = "<span class='text-rose-600'><i class='fa-solid fa-xmark'></i> Incorrecte</span>";
+            }
+
+            quizState.answers[qId] = selectedIdx;
+            expDiv.classList.remove('hidden');
+
+            document.getElementById('quiz-score').innerText = `${quizState.score} / ${quizQuestions.length}`;
+            renderMath();
         }
 
         function resetQuiz() {
+            quizState.score = 0;
             quizState.answers = {};
+            document.getElementById('quiz-score').innerText = `0 / ${quizQuestions.length}`;
             renderGlobalQuiz();
-            if (window.MathJax) MathJax.typesetPromise();
         }
 
-        /* STREAMING_CHUNK: Gemini AI Tutor Assistant Integration... */
         function openAiHelpModal() {
             document.getElementById('ai-modal').classList.remove('hidden');
         }
@@ -1008,93 +981,54 @@ I will now create an interactive web application designed for high school / Bacc
             document.getElementById('ai-modal').classList.add('hidden');
         }
 
-        function setAiPrompt(promptText) {
-            document.getElementById('ai-prompt-input').value = promptText;
+        function setAiPrompt(text) {
+            document.getElementById('ai-prompt-input').value = text;
         }
 
         async function askGeminiTutor() {
-            const inputEl = document.getElementById('ai-prompt-input');
+            const promptInput = document.getElementById('ai-prompt-input').value.trim();
+            if (!promptInput) return;
+
+            const submitBtn = document.getElementById('ai-submit-btn');
             const responseArea = document.getElementById('ai-response-area');
-            const btn = document.getElementById('ai-submit-btn');
-            const userText = inputEl.value.trim();
 
-            if (!userText) return;
-
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Pensant explicació...`;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Responent...`;
             responseArea.classList.remove('hidden');
-            responseArea.innerHTML = `<span class="text-slate-400 italic">El tutor de matemàtiques està analitzant la teva pregunta...</span>`;
+            responseArea.innerHTML = `<div class="text-slate-500 italic"><i class="fa-solid fa-brain fa-pulse mr-1"></i> El tutor està analitzant el concepte matemàtic...</div>`;
 
-            const systemPrompt = `Ets un professor expert de matemàtiques de Batxillerat especialitzat en càlcul diferencial, límits, continuïtat i asímptotes de funcions. Respon SEMPRE en català clar, pedagògic i estructurat pas a pas. Utilitza la notació LaTeX adequada $...$ per a les fórmules.`;
-
-            const apiKey = "";
+            const systemPrompt = "Ets un tutor/a expert de matemàtiques de Batxillerat especialitzat en Límits, Continuïtat i Asímptotes. Explica els conceptes de forma pedagògica, clara, en català, i utilitzant sintaxi LaTeX (fórmula inline amb \\(...\\) o fórmula en bloc amb $$...$$) per a la visualització de fórmules matemàtiques.";
+            
+            const apiKey = ""; // Canvas runtime autocompletes this key
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
             const payload = {
-                contents: [{ parts: [{ text: userText }] }],
-                systemInstruction: { parts: [{ text: systemPrompt }] }
+                contents: [{ parts: [{ text: promptInput }] }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                }
             };
 
             try {
-                let attempts = 0;
-                let success = false;
-                let resultData = null;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-                while (attempts < 3 && !success) {
-                    try {
-                        const response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
+                const data = await response.json();
+                const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Ho sentim, no s'ha pogut generar una resposta en aquest moment.";
 
-                        if (response.ok) {
-                            resultData = await response.json();
-                            success = true;
-                        } else {
-                            attempts++;
-                            await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempts)));
-                        }
-                    } catch (e) {
-                        attempts++;
-                        await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempts)));
-                    }
-                }
+                responseArea.innerHTML = `<div class="prose prose-xs text-slate-700 leading-relaxed">${resultText.replace(/\n/g, '<br>')}</div>`;
 
-                if (success && resultData?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    const replyText = resultData.candidates[0].content.parts[0].text;
-                    responseArea.innerHTML = replyText.replace(/\n/g, '<br>');
-                    if (window.MathJax) MathJax.typesetPromise([responseArea]);
-                } else {
-                    responseArea.innerHTML = `<span class="text-rose-600">Ho sentim, no hem pogut obtenir la resposta en aquest moment. Revisa la connexió o intenta-ho més tard.</span>`;
-                }
+                renderMath();
             } catch (err) {
-                responseArea.innerHTML = `<span class="text-rose-600">Error en la comunicació amb el Tutor AI.</span>`;
+                responseArea.innerHTML = `<div class="text-rose-600 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Error en connectar amb el Tutor AI. Intenta-ho de nou.</div>`;
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Demanar explicació`;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Demanar explicació`;
             }
         }
     </script>
 </body>
 </html>
-```eof
-
-He creat una aplicació web interactiva i completa adaptada al currículum de **Matemàtiques de Batxillerat** per treure el màxim profit al tema de **límits, continuïtat i discontinuïtats de funcions**.
-
-### Resum dels 4 Apartats Inclosos:
-
-1. **Límits Laterals en un Punt**:
-   - Visualització gràfica interactiva amb explorador $x \to a^-$ i $x \to a^+$.
-   - Anàlisi de condició d'existència del límit i visualització de punts redefinibles o salts.
-2. **Límits a l'Infinit i Asímptotes**:
-   - Visualització de comportaments en $+\infty$ i $-\infty$.
-   - Identificació d'asímptotes Horitzontals, Verticals i Obliques.
-3. **Classificació de Discontinuïtats**:
-   - Targetes interactives per a **Discontinuïtat Evitable**, **Salt Finit** i **Salt Infinit (Asimptòtica)**.
-   - Representació gràfica immediata de cada tipus amb explicacions detallades.
-4. **Pràctica Global i Autoavaluació**:
-   - Qüestionari interactiu avaluable amb correcció al moment, explicacions pas a pas i marcador de puntuació.
-   - **Tutor AI integrat (API Gemini)** per resoldre qualsevol dubte o explicació addicional pas a pas.
-
-```
